@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rekap Nilai Siswa 12 UPW 2</title>
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #34495e;
+            --accent-color: #3498db;
+            --bg-color: #f4f7f6;
+            --text-color: #333;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: auto;
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        h1, h2 {
+            text-align: center;
+            color: var(--primary-color);
+        }
+
+        /* Styling Rubrik */
+        .rubric-section {
+            margin-bottom: 40px;
+            border-left: 5px solid var(--accent-color);
+            padding-left: 20px;
+            background: #eef7ff;
+            padding: 15px;
+            border-radius: 0 8px 8px 0;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+
+        th {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        /* Warna Predikat */
+        .grade-a { color: #27ae60; font-weight: bold; }
+        .grade-b { color: #f39c12; font-weight: bold; }
+
+        /* Interaktivitas baris */
+        .student-row {
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .student-row:hover {
+            background-color: #f1f1f1;
+        }
+
+        .description-panel {
+            display: none;
+            background: #fafafa;
+            padding: 10px;
+            font-style: italic;
+            font-size: 0.9em;
+            color: #555;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Rekapitulasi Nilai Praktik Desain Brosur</h1>
+    <p style="text-align: center;"><strong>Kelas: 12 UPW 2 | Modul: Java Overland Tour</strong></p>
+
+    <div class="rubric-section">
+        <h2>Rubrik Penilaian</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Aspek</th>
+                    <th>Bobot</th>
+                    <th>Alasan Penilaian</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Visual & Layout</td>
+                    <td>30%</td>
+                    <td>Keseimbangan desain lipat 3 dan kemudahan alur baca bagi konsumen.</td>
+                </tr>
+                <tr>
+                    <td>Tipografi & Ejaan</td>
+                    <td>20%</td>
+                    <td>Ketelitian penulisan nama tempat; krusial untuk kepercayaan pelanggan.</td>
+                </tr>
+                <tr>
+                    <td>Konten Wisata</td>
+                    <td>30%</td>
+                    <td>Akurasi geografis, itinerary, dan kelengkapan fasilitas include/exclude.</td>
+                </tr>
+                <tr>
+                    <td>Marketing</td>
+                    <td>20%</td>
+                    <td>Kreativitas penawaran harga dan kemudahan akses kontak reservasi.</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <h2>Daftar Nilai Siswa</h2>
+    <p><small>*Klik pada baris siswa untuk melihat masukan deskriptif.</small></p>
+    <table id="studentTable">
+        <thead>
+            <tr>
+                <th>No</th>
+                <th>Nama Siswa</th>
+                <th>Nilai</th>
+                <th>Predikat</th>
+            </tr>
+        </thead>
+        <tbody id="tableBody">
+            </tbody>
+    </table>
+</div>
+
+<script>
+    const students = [
+        { no: 1, name: "Angeline Praganata", score: 94, grade: "A", desc: "Sangat Baik: Konsep kuliner sangat kuat; visual dan konten sangat matang & profesional." },
+        { no: 2, name: "Cherine Chezia", score: 92, grade: "A", desc: "Sangat Baik: Struktur rute sangat kronologis; penggunaan ruang desain sangat efisien." },
+        { no: 3, name: "Jessica", score: 90, grade: "A", desc: "Sangat Baik: Strategi promo (diskon) sangat menonjol; gaya desain sangat kekinian." },
+        { no: 4, name: "Laura Shereen", score: 89, grade: "A-", desc: "Baik: Detail kebijakan tur (remarks) sangat profesional; skema warna sangat harmonis." },
+        { no: 5, name: "Mercy Angeline", score: 88, grade: "A-", desc: "Baik: Visual elegan; pemilihan diksi dalam slogan sangat menyentuh sisi emosional." },
+        { no: 6, name: "Shareen", score: 87, grade: "A-", desc: "Baik: Sangat kaya akan variasi destinasi; pemilihan foto objek wisata sangat menarik." },
+        { no: 7, name: "Yuri", score: 85, grade: "B+", desc: "Baik: Kreativitas layout tinggi (gaya Polaroid), namun perlu lebih teliti pada ejaan teks." },
+        { no: 8, name: "Justine Jafferson", score: 84, grade: "B+", desc: "Cukup: Penawaran harga sangat bagus; perlu perbaikan pada akurasi lokasi geografis." },
+        { no: 9, name: "Jasson", score: 83, grade: "B", desc: "Cukup: Layout bersih dan informatif; disarankan menggunakan deskripsi profil asli." },
+        { no: 10, name: "Alvin Chandra", score: 82, grade: "B", desc: "Cukup: Fokus pada kualitas hotel sangat baik; perlu ketelitian pada penulisan nama objek." },
+        { no: 11, name: "Darren Vallenskie", score: 81, grade: "B", desc: "Cukup: Detail fasilitas hotel sangat lengkap; pastikan isi konten sinkron dengan judul paket." }
+    ];
+
+    const tableBody = document.getElementById('tableBody');
+
+    students.forEach(s => {
+        // Buat baris utama
+        const row = document.createElement('tr');
+        row.className = 'student-row';
+        row.innerHTML = `
+            <td>${s.no}</td>
+            <td>${s.name}</td>
+            <td>${s.score}</td>
+            <td class="${s.score >= 85 ? 'grade-a' : 'grade-b'}">${s.grade}</td>
+        `;
+
+        // Buat baris deskripsi (sembunyi)
+        const descRow = document.createElement('tr');
+        descRow.innerHTML = `<td colspan="4" class="description-panel">${s.desc}</td>`;
+
+        // Event klik untuk toggle deskripsi
+        row.addEventListener('click', () => {
+            const panel = descRow.querySelector('.description-panel');
+            panel.style.display = panel.style.display === 'block' ? 'none' : 'block';
+        });
+
+        tableBody.appendChild(row);
+        tableBody.appendChild(descRow);
+    });
+</script>
+
+</body>
+</html>
