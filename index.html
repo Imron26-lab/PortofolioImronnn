@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TTS: Arsitektur IT Bisnis</title>
+    <style>
+        * { box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f0f2f5;
+            color: #333;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        h1 { text-align: center; color: #1a3a5a; margin-bottom: 5px; text-transform: uppercase; }
+        p.subtitle { text-align: center; color: #5a7d9a; margin-bottom: 25px; font-weight: 500; }
+        
+        /* Identitas */
+        .student-info {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 30px;
+            background: #f8fafc;
+            padding: 20px;
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+        }
+        .input-group { flex: 1; }
+        .input-group label { display: block; font-weight: bold; margin-bottom: 8px; color: #34495e; }
+        .input-group input {
+            width: 100%; padding: 12px; border: 2px solid #cbd5e1; border-radius: 6px; font-size: 16px; transition: border-color 0.3s;
+        }
+        .input-group input:focus { border-color: #3498db; outline: none; }
+
+        /* Board TTS */
+        .tts-layout { display: flex; flex-wrap: wrap; gap: 30px; }
+        .board-container { flex: 1 1 100%; overflow-x: auto; padding: 20px 0; }
+        #crossword-board {
+            display: grid; gap: 1px; background-color: #475569; padding: 2px; width: max-content; margin: 0 auto;
+        }
+        .cell-wrapper { position: relative; width: 45px; height: 45px; background-color: #fff; }
+        .cell-input {
+            width: 100%; height: 100%; border: none; text-align: center; text-transform: uppercase;
+            font-size: 22px; font-weight: 800; outline: none; background: transparent; padding-top: 12px; color: #1e293b;
+        }
+        .cell-input:focus { background-color: #f0f9ff; }
+        .cell-number {
+            position: absolute; top: 2px; left: 4px; font-size: 12px; font-weight: 900; color: #64748b; pointer-events: none;
+        }
+        
+        /* Clues */
+        .clues-container { flex: 1 1 100%; display: flex; flex-wrap: wrap; gap: 20px; }
+        .clue-box { flex: 1 1 45%; background: #ffffff; padding: 20px; border-radius: 8px; border: 1px solid #e2e8f0; }
+        .clue-box h3 { margin-top: 0; color: #2c3e50; border-bottom: 2px solid #3498db; padding-bottom: 8px; }
+        .clue-item { margin-bottom: 12px; line-height: 1.6; font-size: 15px; color: #475569; }
+        
+        /* Result & Buttons */
+        .action-container { flex: 1 1 100%; text-align: center; margin-top: 25px; }
+        .btn {
+            padding: 14px 35px; font-size: 16px; font-weight: bold; border-radius: 8px; cursor: pointer; transition: all 0.3s; border: none;
+        }
+        #btn-submit { background-color: #3498db; color: white; }
+        #btn-submit:hover { background-color: #2980b9; transform: translateY(-2px); }
+        #btn-print { background-color: #94a3b8; color: white; display: none; margin-left: 10px; }
+        
+        #hasil-nilai {
+            display: none; font-size: 22px; font-weight: bold; margin: 20px auto; padding: 20px; border-radius: 10px; max-width: 500px;
+        }
+        .lulus { background-color: #dcfce7; color: #166534; border: 1px solid #bbf7d0; }
+        .remedial { background-color: #fee2e2; color: #991b1b; border: 1px solid #fecaca; }
+
+        @media print {
+            .clues-container, .btn, p.subtitle { display: none !important; }
+            .container { box-shadow: none; border: none; }
+            .student-info { border: 1px solid #000; margin-bottom: 10px; }
+            #crossword-board { border: 1px solid #000; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>TEKA-TEKI SILANG</h1>
+    <p class="subtitle">ARSITEKTUR IT BISNIS</p>
+
+    <div class="student-info">
+        <div class="input-group">
+            <label>Nama Lengkap:</label>
+            <input type="text" id="namaSiswa" placeholder="Masukkan nama..." required>
+        </div>
+        <div class="input-group">
+            <label>Kelas:</label>
+            <input type="text" id="kelasSiswa" placeholder="Contoh: XII UPW 2" required>
+        </div>
+    </div>
+
+    <div class="tts-layout">
+        <div class="board-container">
+            <div id="crossword-board"></div>
+        </div>
+
+        <div class="action-container">
+            <div id="hasil-nilai"></div>
+            <button id="btn-submit" class="btn" onclick="cekJawaban()">Kirim Jawaban & Cek Nilai</button>
+            <button id="btn-print" class="btn" onclick="window.print()">Download Hasil (PDF)</button>
+        </div>
+
+        <div class="clues-container">
+            <div class="clue-box" id="clues-across"><h3>MENDATAR</h3></div>
+            <div class="clue-box" id="clues-down"><h3>MENURUN</h3></div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // MASUKKAN URL GOOGLE APPS SCRIPT ANDA DI SINI
+    const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzsBYcHETVENhHlnTdBUSE8xEy3h5nsH7FFFjmeGn4FCA1V8GYXo3Xwy6YduMo4eYMzTQ/exec';
+
+    const words = [
+        { id: 1, dir: 'H', text: 'MIKROTIK', r: 3, c: 6, clue: 'Merek perangkat keras yang bertindak sebagai "otak" pengatur lalu lintas jaringan.' },
+        { id: 2, dir: 'H', text: 'SABRE', r: 10, c: 5, clue: 'Sistem distribusi global (GDS) yang memproses inventaris ratusan maskapai.' },
+        { id: 3, dir: 'H', text: 'SWITCH', r: 5, c: 6, clue: 'Perangkat pusat lalu lintas data untuk menghubungkan PC antar ruangan menggunakan kabel.' },
+        { id: 4, dir: 'H', text: 'VLAN', r: 4, c: 4, clue: 'Kependekan dari teknologi membagi jaringan fisik menjadi beberapa kompartemen logis.' },
+        { id: 5, dir: 'H', text: 'EXCEL', r: 6, c: 7, clue: 'Perangkat lunak Microsoft "Kalkulator Keuangan" untuk menghitung margin paket wisata.' },
+        { id: 6, dir: 'V', text: 'MESH', r: 5, c: 11, clue: 'Sistem WiFi yang membuat pengguna bisa berpindah area tanpa putus koneksi.' },
+        { id: 7, dir: 'V', text: 'POE', r: 6, c: 10, clue: 'Teknologi injeksi arus listrik melalui kabel UTP untuk menghidupkan Access Point.' },
+        { id: 8, dir: 'V', text: 'ZONE', r: 1, c: 10, clue: 'Area di perkantoran di mana sinyal WiFi terhalang atau tidak sampai disebut Dead....' },
+        { id: 9, dir: 'V', text: 'MASQUERADE', r: 3, c: 6, clue: 'Kata sandi rahasia pada konfigurasi Firewall NAT MikroTik untuk mengamankan data.' },
+        { id: 10, dir: 'V', text: 'WIRED', r: 2, c: 12, clue: 'Jenis jaringan fisik menggunakan kabel UTP yang membatasi mobilitas karyawan.' }
+    ];
+
+    let maxR = 0; let maxC = 0;
+    const gridData = {};
+
+    words.forEach(w => {
+        for (let i = 0; i < w.text.length; i++) {
+            let row = w.r + (w.dir === 'V' ? i : 0);
+            let col = w.c + (w.dir === 'H' ? i : 0);
+            let key = `${row}-${col}`;
+            if (row > maxR) maxR = row; if (col > maxC) maxC = col;
+            if (!gridData[key]) gridData[key] = { answer: w.text[i], numbers: [] };
+            if (i === 0) gridData[key].numbers.push(w.id);
+        }
+    });
+
+    const board = document.getElementById('crossword-board');
+    board.style.gridTemplateColumns = `repeat(${maxC + 1}, 1fr)`;
+
+    for (let r = 1; r <= maxR + 1; r++) {
+        for (let c = 1; c <= maxC + 1; c++) {
+            let key = `${r}-${c}`;
+            if (gridData[key]) {
+                let cellData = gridData[key];
+                let label = cellData.numbers.length > 0 ? cellData.numbers.join('/') : '';
+                board.insertAdjacentHTML('beforeend', `
+                    <div class="cell-wrapper" style="grid-row: ${r}; grid-column: ${c};">
+                        ${label ? `<div class="cell-number">${label}</div>` : ''}
+                        <input type="text" class="cell-input" maxlength="1" data-answer="${cellData.answer}">
+                    </div>
+                `);
+            }
+        }
+    }
+
+    words.forEach(w => {
+        let item = `<div class="clue-item"><strong>${w.id}.</strong> ${w.clue}</div>`;
+        document.getElementById(w.dir === 'H' ? 'clues-across' : 'clues-down').insertAdjacentHTML('beforeend', item);
+    });
+
+    function cekJawaban() {
+        const nama = document.getElementById('namaSiswa').value;
+        const kelas = document.getElementById('kelasSiswa').value;
+        const btnSubmit = document.getElementById('btn-submit');
+
+        if (!nama || !kelas) { alert("⚠️ Lengkapi Nama dan Kelas!"); return; }
+
+        btnSubmit.innerText = "Mengirim Nilai...";
+        btnSubmit.disabled = true;
+
+        let inputs = document.querySelectorAll('.cell-input');
+        let benar = 0;
+
+        inputs.forEach(input => {
+            if (input.value.toUpperCase() === input.getAttribute('data-answer')) {
+                input.style.backgroundColor = "#dcfce7"; benar++;
+            } else {
+                input.style.backgroundColor = "#fee2e2";
+            }
+            input.setAttribute('readonly', true);
+        });
+
+        let skor = Math.round((benar / inputs.length) * 100);
+
+        // Kirim ke Google Sheets
+        let fd = new FormData();
+        fd.append('nama', nama); fd.append('kelas', kelas); fd.append('nilai', skor);
+
+        fetch(SCRIPT_URL, { method: 'POST', body: fd })
+        .then(() => {
+            const area = document.getElementById('hasil-nilai');
+            area.style.display = "block";
+            area.className = skor >= 75 ? "lulus" : "remedial";
+            area.innerHTML = `HASIL AKHIR - Nama: ${nama}<br>Skor: ${skor} / 100`;
+            
+            btnSubmit.style.display = "none";
+            document.getElementById('btn-print').style.display = "inline-block";
+            alert("✅ Jawaban tersimpan di sistem!");
+        })
+        .catch(() => alert("❌ Gagal mengirim. Periksa koneksi internet."));
+    }
+</script>
+</body>
+</html>
